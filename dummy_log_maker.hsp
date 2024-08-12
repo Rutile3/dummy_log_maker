@@ -1,0 +1,130 @@
+; 
+; ダミーログメーカー
+; 
+#include "hspext.as"
+
+#const WINDOW_WIDTH 640 ; ウィンドウの幅
+#const WINDOW_HEIGHT 480 ; ウィンドウの高さ
+#const G_MARGIN 10 ; マージンの定義
+#const BTN_WIDTH 60 ; ボタンの幅
+#const BTN_HEIGHT 30 ; ボタンの高さ
+#const LABEL_WIDTH 100 ; ラベルの幅
+#const LABEL_HEIGHT 30 ; ラベルの高さ
+#const TEXT_WIDTH WINDOW_WIDTH - G_MARGIN * 2 -LABEL_WIDTH - G_MARGIN - G_MARGIN * 2 ; テキストボックスの幅
+#const TEXT_HEIGHT 30 ; テキストボックスの高さ
+#const MESBOX_WIDTH LABEL_WIDTH + G_MARGIN + TEXT_WIDTH ; メッセージボックスの幅
+#const MESBOX_HEIGHT 250 ;メッセージボックスの高さ
+
+#const LOG_LINES_INPUT 0 ; 生成するログの行数の指定
+#const LOG_FORMAT_INPUT 1 ; 生成するログのフォーマットを指定
+#const GENERATE_BUTTON 2 ; ログを生成
+#const COPY_BUTTON 3 ; 生成したログをコピー
+#const SAVE_BUTTON 4 ; 生成したログをファイルに保存
+#const LOG_RESULT_MESBOX 5 ; 生成したログを表示
+click_button_result_msg_x = 0
+click_button_result_msg_y = 0
+
+log_lines = 10
+log_format = "[%yyyy%/%MM%/%dd% %HH%:%mm%:%ss%], [0], test"
+sdim log_result, 1024
+log_result = ""
+
+*mainLayout
+	screen 0, WINDOW_WIDTH, WINDOW_HEIGHT
+	title "ダミーログメーカー"
+	syscolor 15 ; ウィンドウ表面色
+	boxf
+	color ; 文字色のリセット
+	font "ＭＳ ゴシック", 16
+	objmode 2
+
+	pos_x = G_MARGIN
+	pos_y = G_MARGIN * 2
+	pos pos_x, pos_y
+	mes "構成" 
+	pos_y += LABEL_HEIGHT
+
+	pos_x = G_MARGIN * 2
+	pos pos_x, pos_y
+	mes "行数："
+	pos_x += LABEL_WIDTH + G_MARGIN
+	pos pos_x, pos_y
+	input log_lines, TEXT_WIDTH, TEXT_HEIGHT
+	pos_y += LABEL_HEIGHT + G_MARGIN
+
+	pos_x = G_MARGIN * 2
+	pos pos_x, pos_y
+	mes "フォーマット："
+	pos_x += LABEL_WIDTH + G_MARGIN
+	pos pos_x, pos_y
+	input log_format, TEXT_WIDTH, TEXT_HEIGHT
+	pos_y += LABEL_HEIGHT + G_MARGIN
+
+	pos_x = G_MARGIN
+	pos_y += G_MARGIN
+	pos pos_x, pos_y
+	mes "出力"
+	pos_y += LABEL_HEIGHT
+
+	pos_x = G_MARGIN * 2
+	pos pos_x, pos_y
+	objsize BTN_WIDTH, BTN_HEIGHT
+	button "生成", *clickGenerateButton
+	pos_x += BTN_WIDTH + G_MARGIN
+	pos pos_x, pos_y
+	objsize BTN_WIDTH, BTN_HEIGHT
+	button "コピー", *clickCopyButton
+	pos_x += BTN_WIDTH + G_MARGIN
+	pos pos_x, pos_y
+	objsize BTN_WIDTH, BTN_HEIGHT
+	button "保存", *clickSaveButton
+	pos_x += BTN_WIDTH + G_MARGIN
+	pos pos_x, pos_y
+	click_button_result_msg_x = pos_x
+	click_button_result_msg_y = pos_y
+	pos_y += BTN_HEIGHT + G_MARGIN
+
+	pos_x = G_MARGIN * 2
+	pos pos_x, pos_y
+	mesbox log_result, MESBOX_WIDTH, MESBOX_HEIGHT, 6
+	
+	stop
+
+*clickGenerateButton
+	log_result = ""
+	for i, 0, log_lines
+		log_result += log_format + "\n"
+	next
+	objprm LOG_RESULT_MESBOX, log_result
+
+	setClickButtonResultMsg "ダミーログの生成が完了しました。"
+	stop
+
+*clickCopyButton
+	clipset log_result
+	setClickButtonResultMsg "ダミーログのクリップボードにコピーしました。"
+	stop
+
+*clickSaveButton
+	dialog "txt", 17, "プレーンテキスト" ; ファイル保存のダイアログ
+	if stat = 0 : stop
+    title refstr
+	
+	stop
+
+#deffunc setClickButtonResultMsg str text
+	cbrmx1 = click_button_result_msg_x
+	cbrmx2 = WINDOW_WIDTH
+	cbrmy1 = click_button_result_msg_y
+	cbrmy2 = click_button_result_msg_y + LABEL_HEIGHT
+	
+	redraw 0 ; 描画を一時的に停止
+	syscolor 15 ; ウィンドウ表面色
+	boxf cbrmx1, cbrmy1, cbrmx2, cbrmy2
+	
+	color 0, 128, 0
+	pos cbrmx1, cbrmy1
+	mes text
+
+	redraw ; 実際に描画を反映
+	return
