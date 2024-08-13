@@ -106,9 +106,15 @@ log_result = ""
 	stop
 
 *clickSaveButton
-	dialog "txt", 17, "プレーンテキスト" ; ファイル保存のダイアログ
+	; ファイルの保存先を指定
+	dialog "txt", 17, "プレーンテキスト"
 	if stat = 0 : stop
-    title refstr
+    
+    ; ファイルに保存
+    noteBuffer = ""
+    notesel noteBuffer
+    noteadd log_result
+    notesave refstr
 	
 	stop
 
